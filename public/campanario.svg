@@ -1,0 +1,9 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Silueta del Campanario -->
+  <path d="M150 450V220L256 120L362 220V450" stroke="#1E3A8A" stroke-width="32" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- La Campana -->
+  <path d="M256 240C230 240 210 260 210 285V330H302V285C302 260 282 240 256 240Z" fill="#F59E0B"/>
+  <circle cx="256" cy="345" r="12" fill="#F59E0B"/>
+  <!-- Línea de Base -->
+  <path d="M120 450H392" stroke="#1E3A8A" stroke-width="32" stroke-linecap="round"/>
+</svg>
