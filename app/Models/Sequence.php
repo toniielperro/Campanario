@@ -10,7 +10,11 @@ class Sequence extends Model
 {
     use HasFactory, SoftDeletes;
 
-    protected $fillable = ['nombre','descripcion'];
+    protected $fillable = ['nombre','descripcion','repetitions'];
+
+    protected $casts = [
+        'repetitions' => 'integer',
+    ];
 
     public function items()
     {

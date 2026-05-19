@@ -123,13 +123,27 @@
                     const res = await fetch('/sequences/' + id + '/preview');
                     if(!res.ok) throw new Error('no');
                     const data = await res.json();
+                    // schedule items relative to sequence start so they can overlap (carrillón-like)
+                    const repetitions = parseInt(data.repetitions || 1, 10) || 1;
+                    // compute per-loop offsets
+                    const offsets = [];
+                    let acc = 0;
                     for(const it of data.items){
-                        if(!it.bell_sound || !it.bell_sound.ruta_archivo) continue;
-                        const src = it.bell_sound.ruta_archivo.startsWith('/') ? window.location.origin + it.bell_sound.ruta_archivo : it.bell_sound.ruta_archivo;
-                        player.src = src;
-                        await player.play().catch(()=>{});
-                        await waitForEnd(player, 60000);
-                        await new Promise(r=>setTimeout(r, (it.interval_seconds||1)*1000));
+                        offsets.push(acc);
+                        acc += (parseFloat(it.interval_seconds) || 1);
+                    }
+                    const loopDuration = acc;
+                    for(let r=0;r<repetitions;r++){
+                        const baseMs = Math.round(r * loopDuration * 1000);
+                        data.items.forEach((it, idx) => {
+                            if(!it.bell_sound || !it.bell_sound.ruta_archivo) return;
+                            const src = it.bell_sound.ruta_archivo.startsWith('/') ? window.location.origin + it.bell_sound.ruta_archivo : it.bell_sound.ruta_archivo;
+                            const scheduledOffsetMs = baseMs + Math.round(offsets[idx]*1000);
+                            const jitter = (Math.random() - 0.5) * 30;
+                            setTimeout(()=>{
+                                try{ const a = new Audio(src); a.preload='auto'; a.play().catch(()=>{}); }catch(e){ console.warn('play item failed', e); }
+                            }, scheduledOffsetMs + Math.round(jitter));
+                        });
                     }
                 }catch(e){
                     Swal.fire({title:'No se pudo reproducir', icon:'warning', confirmButtonText:'Entendido'});

@@ -13,7 +13,7 @@ return new class extends Migration
             $table->foreignId('sequence_id')->constrained('sequences')->onDelete('cascade');
             $table->foreignId('bell_sound_id')->constrained('bell_sounds')->onDelete('cascade');
             $table->integer('orden')->default(0);
-            $table->integer('interval_seconds')->default(1); // seconds to wait after this item before next
+            $table->integer('interval_seconds')->default(1); // seconds from the start of this item to the start of the next
             $table->timestamps();
         });
     }

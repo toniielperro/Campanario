@@ -32,7 +32,11 @@ class SequenceController extends Controller
         $data = $request->validate([
             'nombre' => 'required|string|max:255',
             'descripcion' => 'nullable|string',
-            'items' => 'nullable|array'
+            'items' => 'nullable|array',
+            'items.*.bell_sound_id' => 'required_with:items|exists:bell_sounds,id',
+            'items.*.orden' => 'nullable|integer',
+            'items.*.interval_seconds' => 'nullable|numeric|min:0',
+            'repetitions' => 'nullable|integer|min:1',
         ]);
 
         $sequence = Sequence::create($data);
@@ -64,7 +68,11 @@ class SequenceController extends Controller
         $data = $request->validate([
             'nombre' => 'required|string|max:255',
             'descripcion' => 'nullable|string',
-            'items' => 'nullable|array'
+            'items' => 'nullable|array',
+            'items.*.bell_sound_id' => 'required_with:items|exists:bell_sounds,id',
+            'items.*.orden' => 'nullable|integer',
+            'items.*.interval_seconds' => 'nullable|numeric|min:0',
+            'repetitions' => 'nullable|integer|min:1',
         ]);
 
         $sequence->update($data);
@@ -111,7 +119,12 @@ class SequenceController extends Controller
             ];
         })->values();
 
-        return response()->json(['id' => $sequence->id, 'nombre' => $sequence->nombre, 'items' => $items]);
+        return response()->json([
+            'id' => $sequence->id,
+            'nombre' => $sequence->nombre,
+            'repetitions' => $sequence->repetitions ?? 1,
+            'items' => $items
+        ]);
     }
 
     public function restore($id)

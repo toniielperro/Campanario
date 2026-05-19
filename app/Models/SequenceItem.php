@@ -11,6 +11,10 @@ class SequenceItem extends Model
 
     protected $fillable = ['sequence_id','bell_sound_id','orden','interval_seconds'];
 
+    protected $casts = [
+        'interval_seconds' => 'float',
+    ];
+
     public function bellSound()
     {
         return $this->belongsTo(BellSound::class);

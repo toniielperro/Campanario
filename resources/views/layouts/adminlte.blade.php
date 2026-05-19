@@ -328,22 +328,26 @@
                             if(s.sequence && Array.isArray(s.sequence.items) && s.sequence.items.length){
                                 (async function(){
                                     try{
-                                        for(const it of s.sequence.items){
+                                        const repetitions = Math.max(1, parseInt(s.sequence.repetitions || 1, 10) || 1);
+                                        for(let r = 0; r < repetitions; r++){
+                                            showToast('Reproduciendo secuencia: ' + (s.sequence.nombre || 'campanazo') + ' (' + (r + 1) + '/' + repetitions + ')');
+                                            for(const it of s.sequence.items){
                                                 if(!it || !it.bell_sound || !it.bell_sound.ruta_archivo) continue;
                                                 let src = it.bell_sound.ruta_archivo;
                                                 if(src.startsWith('/')) src = window.location.origin + src;
                                                 try{
-                                                    player.src = src;
-                                                    await player.play();
-                                                    showToast('Reproduciendo: ' + (it.bell_sound.nombre || 'sonido'));
-                                                    // wait for audio to finish (or timeout)
-                                                    await waitForEnd(player, 60000);
-                                                }catch(err){ console.warn('Item play failed', err); }
-                                                // after item, wait interval_seconds before next
-                                                await new Promise(r => setTimeout(r, (it.interval_seconds || 1) * 1000));
+                                                    const a = new Audio(src);
+                                                    a.preload = 'auto';
+                                                    await a.play().catch(err => console.warn('Item play failed', err));
+                                                }catch(err){
+                                                    console.warn('Item play failed', err);
+                                                }
+                                                const waitMs = Math.max(0, Math.round((parseFloat(it.interval_seconds) || 1) * 1000));
+                                                if(waitMs > 0){
+                                                    await new Promise(resolve => setTimeout(resolve, waitMs));
+                                                }
                                             }
-                                    }finally{
-                                        // record play once sequence finished
+                                        }
                                         try{
                                             const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
                                             fetch('/_monitor/record-play', {
@@ -352,6 +356,7 @@
                                                 body: JSON.stringify({ schedule_id: s.id })
                                             }).catch(e => console.warn('Record play failed', e));
                                         }catch(e){console.warn(e)}
+                                    }finally{
                                         playingNow[s.id] = false;
                                     }
                                 })();

@@ -56,11 +56,22 @@
                         <td class="pilar-muted">{{ implode(', ', $item->fechas_especificas ?? []) ?: '-' }}</td>
                         <td class="text-right">
                             @if(method_exists($item, 'trashed') && $item->trashed())
-                                <form method="POST" action="{{ route('schedules.restore', $item->id) }}" class="d-inline">@csrf<button class="btn btn-restore btn-sm">Restaurar</button></form>
-                                <form method="POST" action="{{ route('schedules.forceDelete', $item->id) }}" class="d-inline pilar-confirm-delete">@csrf @method('DELETE')<button class="btn btn-wine btn-sm">Eliminar</button></form>
+                                <form method="POST" action="{{ route('schedules.restore', $item->id) }}" class="d-inline">
+                                    @csrf
+                                    <button class="pilar-icon-btn" title="Restaurar"><i class="fa fa-undo"></i></button>
+                                </form>
+                                <form method="POST" action="{{ route('schedules.forceDelete', $item->id) }}" class="d-inline pilar-confirm-delete">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button class="pilar-icon-btn" title="Eliminar definitivamente"><i class="fa fa-trash"></i></button>
+                                </form>
                             @else
                                 <a href="{{ route('schedules.edit', $item->id) }}" class="pilar-icon-btn" title="Editar"><i class="fa fa-pen"></i></a>
-                                <form method="POST" action="{{ route('schedules.destroy', $item->id) }}" class="d-inline pilar-confirm-trash">@csrf @method('DELETE')<button class="pilar-icon-btn" title="Enviar a papelera"><i class="fa fa-trash"></i></button></form>
+                                <form method="POST" action="{{ route('schedules.destroy', $item->id) }}" class="d-inline pilar-confirm-trash">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button class="pilar-icon-btn" title="Enviar a papelera"><i class="fa fa-trash"></i></button>
+                                </form>
                             @endif
                         </td>
                     </tr>

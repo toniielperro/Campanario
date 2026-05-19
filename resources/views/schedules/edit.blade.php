@@ -114,14 +114,11 @@
                     if(!it.bell_sound || !it.bell_sound.ruta_archivo) continue;
                     let src = it.bell_sound.ruta_archivo; if(src.startsWith('/')) src = window.location.origin + src;
                     audio.src = src;
+                    const startMs = Date.now();
                     try{ await audio.play(); }catch(e){ console.warn('Preview play failed', e); }
-                    await new Promise(res=>{
-                        let done=false;
-                        const onEnd = ()=>{ if(!done){ done=true; audio.removeEventListener('ended', onEnd); res(); } };
-                        audio.addEventListener('ended', onEnd);
-                        setTimeout(()=>{ if(!done){ done=true; audio.removeEventListener('ended', onEnd); res(); } }, (it.interval_seconds||1)*1000 + 2000);
-                    });
-                    await new Promise(r=>setTimeout(r,(it.interval_seconds||1)*1000));
+                    const elapsed = Date.now() - startMs;
+                    const waitMs = Math.max((it.interval_seconds||1)*1000 - elapsed, 0);
+                    if(waitMs > 0) await new Promise(r=>setTimeout(r, waitMs));
                 }
                 audio.remove();
             }catch(e){ console.warn(e); alert('No se pudo obtener la secuencia para vista previa.'); }

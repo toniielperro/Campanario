@@ -10,6 +10,8 @@ use Illuminate\Support\Facades\Log;
 
 class MonitorController extends Controller
 {
+    private const MONITOR_TIMEZONE = 'America/Caracas';
+
     public function dashboard(Request $request)
     {
         return view('dashboard');
@@ -17,7 +19,7 @@ class MonitorController extends Controller
 
     public function poll(Request $request)
     {
-        $now = Carbon::now();
+        $now = Carbon::now(self::MONITOR_TIMEZONE);
         $time = $now->format('H:i:00');
         $dayEng = strtolower($now->format('l'));
         $dayMap = ['monday'=>'lunes','tuesday'=>'martes','wednesday'=>'miercoles','thursday'=>'jueves','friday'=>'viernes','saturday'=>'sabado','sunday'=>'domingo'];
@@ -59,15 +61,15 @@ class MonitorController extends Controller
 
         // load today's plays for efficient lookup (be defensive if table/migration missing)
         try {
-            $startOfDay = Carbon::today()->startOfDay();
-            $endOfDay = Carbon::today()->endOfDay();
+            $startOfDay = Carbon::today(self::MONITOR_TIMEZONE)->startOfDay();
+            $endOfDay = Carbon::today(self::MONITOR_TIMEZONE)->endOfDay();
             $plays = SchedulePlay::whereBetween('played_at', [$startOfDay, $endOfDay])->get()->groupBy('schedule_id');
         } catch (\Throwable $e) {
             Log::warning('Unable to load schedule plays for dashboard: '.$e->getMessage());
             $plays = collect([]);
         }
 
-        $todayDate = Carbon::today()->toDateString();
+        $todayDate = Carbon::today(self::MONITOR_TIMEZONE)->toDateString();
         $exceptions = \App\Models\ScheduleException::where('activo',true)->whereNull('deleted_at')->get();
 
         $result = $schedules->map(function ($s) use ($plays, $todayDate, $exceptions) {
@@ -103,12 +105,13 @@ class MonitorController extends Controller
                 $sequence = [
                     'id' => $s->sequence->id,
                     'nombre' => $s->sequence->nombre,
+                    'repetitions' => $s->sequence->repetitions ?? 1,
                     'items' => $items,
                 ];
             }
 
             // indicate if schedule applies today either by weekday or specific date
-            $todayEng = strtolower(Carbon::today()->format('l'));
+            $todayEng = strtolower(Carbon::today(self::MONITOR_TIMEZONE)->format('l'));
             $todayMap = ['monday'=>'lunes','tuesday'=>'martes','wednesday'=>'miercoles','thursday'=>'jueves','friday'=>'viernes','saturday'=>'sabado','sunday'=>'domingo'];
             $todayEs = $todayMap[$todayEng] ?? $todayEng;
             $todayApplies = false;
@@ -167,7 +170,7 @@ class MonitorController extends Controller
         });
 
         try {
-            $todayPlaysCount = SchedulePlay::whereDate('played_at', Carbon::today()->toDateString())->count();
+            $todayPlaysCount = SchedulePlay::whereDate('played_at', Carbon::today(self::MONITOR_TIMEZONE)->toDateString())->count();
         } catch (\Throwable $e) {
             Log::warning('Unable to count today schedule plays: '.$e->getMessage());
             $todayPlaysCount = 0;
@@ -183,7 +186,7 @@ class MonitorController extends Controller
     {
         $request->validate(['schedule_id' => 'required|exists:schedules,id']);
         $id = $request->input('schedule_id');
-        SchedulePlay::create(['schedule_id' => $id, 'played_at' => Carbon::now()]);
+        SchedulePlay::create(['schedule_id' => $id, 'played_at' => Carbon::now(self::MONITOR_TIMEZONE)]);
         return response()->json(['ok' => true]);
     }
 }

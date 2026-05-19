@@ -43,7 +43,7 @@ class BellSoundController extends Controller
     {
         $data = $request->validate([
             'nombre' => 'required|string|max:255',
-            'ruta_archivo' => 'required|file|mimetypes:audio/mpeg,audio/wav,audio/ogg,application/octet-stream',
+            'ruta_archivo' => 'required|file|mimes:mp3,wav,ogg|mimetypes:audio/mpeg,audio/wav,audio/x-wav,audio/vnd.wave,audio/ogg,application/octet-stream',
         ]);
 
         if ($request->hasFile('ruta_archivo')) {
@@ -67,7 +67,7 @@ class BellSoundController extends Controller
 
         $data = $request->validate([
             'nombre' => 'required|string|max:255',
-            'ruta_archivo' => 'nullable|file|mimetypes:audio/mpeg,audio/wav,audio/ogg,application/octet-stream',
+            'ruta_archivo' => 'nullable|file|mimes:mp3,wav,ogg|mimetypes:audio/mpeg,audio/wav,audio/x-wav,audio/vnd.wave,audio/ogg,application/octet-stream',
         ]);
 
         if ($request->hasFile('ruta_archivo')) {
